@@ -7,3 +7,5 @@ traceroute univ-grenoble-alpes.fr | tee trace.txt
 traceroute stanford.edu | tee stanford.txt
 traceroute reading.ac.uk | tee reading.txt
 traceroute cdu.edu.au | tee cdu.txt
+traceroute lg.nexlinx.net.pk | tee lg1.txt
+traceroute www.as13030.net | tee lg2.txt

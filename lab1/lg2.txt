@@ -1,0 +1,28 @@
+traceroute to www.as13030.net (213.144.137.198), 30 hops max, 60 byte packets
+ 1  cse-servers-gateway.orchestra.cse.unsw.EDU.AU (129.94.242.1)  0.063 ms  0.050 ms  0.043 ms
+ 2  unsw-gateway.orchestra.cse.unsw.EDU.AU (129.94.39.17)  0.343 ms  0.298 ms  0.404 ms
+ 3  172.17.47.2 (172.17.47.2)  1.318 ms  2.155 ms  2.109 ms
+ 4  172.17.17.9 (172.17.17.9)  0.820 ms  0.775 ms 172.17.17.45 (172.17.17.45)  0.683 ms
+ 5  138.44.18.70 (138.44.18.70)  1.125 ms  1.081 ms 172.17.17.33 (172.17.17.33)  0.675 ms
+ 6  138.44.18.70 (138.44.18.70)  0.989 ms et-1-1-0.pe1.rsby.nsw.aarnet.net.au (113.197.15.12)  1.466 ms  1.436 ms
+ 7  ae1.170.bdr1.b.sea.aarnet.net.au (113.197.15.63)  147.183 ms  147.159 ms  147.138 ms
+ 8  xe-4-1-1.mpr1.sea1.us.above.net (64.125.193.129)  137.790 ms  137.797 ms  137.771 ms
+ 9  ae27.cs1.sea1.us.eth.zayo.com (64.125.29.0)  260.344 ms  260.430 ms xe-4-1-1.mpr1.sea1.us.above.net (64.125.193.129)  137.782 ms
+10  ae8.cr1.sea1.us.zip.zayo.com (64.125.28.193)  260.404 ms ae27.cs1.sea1.us.eth.zayo.com (64.125.29.0)  260.467 ms  260.445 ms
+11  ae8.cr1.sea1.us.zip.zayo.com (64.125.28.193)  260.247 ms ae12.cr2.ord9.us.zip.zayo.com (64.125.19.5)  260.339 ms ae8.cr1.sea1.us.zip.zayo.com (64.125.28.193)  260.577 ms
+12  * ae12.cr2.ord9.us.zip.zayo.com (64.125.19.5)  260.280 ms *
+13  ae7.cr2.ewr14.us.zip.zayo.com (64.125.29.25)  260.409 ms * *
+14  ae7.cr2.ewr14.us.zip.zayo.com (64.125.29.25)  260.476 ms *  260.358 ms
+15  * * *
+16  ae5.cr1.lhr11.uk.eth.zayo.com (64.125.29.127)  260.782 ms  260.198 ms  260.264 ms
+17  * ae4.mpr1.lhr15.uk.zip.zayo.com (64.125.28.195)  275.719 ms ae5.cr1.lhr11.uk.eth.zayo.com (64.125.29.127)  260.247 ms
+18  linx-1.init7.net (195.66.224.175)  261.359 ms  260.914 ms  261.440 ms
+19  r2lon2.core.init7.net (5.180.135.248)  260.882 ms  260.921 ms linx-1.init7.net (195.66.224.175)  277.410 ms
+20  r2lon2.core.init7.net (5.180.135.248)  261.222 ms  261.179 ms  261.231 ms
+21  r2fra3.core.init7.net (5.180.135.129)  272.114 ms  272.057 ms r2fra2.core.init7.net (5.180.135.127)  272.383 ms
+22  r1fra2.core.init7.net (80.81.193.67)  272.510 ms r2fra2.core.init7.net (5.180.135.127)  287.407 ms  286.451 ms
+23  5-180-134-46.init7.net (5.180.134.46)  277.197 ms  277.308 ms r1fra2.core.init7.net (80.81.193.67)  272.314 ms
+24  5-180-134-46.init7.net (5.180.134.46)  277.125 ms  277.502 ms r1zrh3.core.init7.net (5.180.134.38)  277.245 ms
+25  r1zrh3.core.init7.net (5.180.134.38)  277.604 ms 5-180-134-172.init7.net (5.180.134.172)  277.771 ms r1zrh3.core.init7.net (5.180.134.38)  277.351 ms
+26  s1zrh17.edge.init7.net (5.180.134.183)  277.051 ms  277.051 ms 5-180-134-172.init7.net (5.180.134.172)  278.037 ms
+27  vwebd03.sys.init7.net (213.144.137.198)  276.957 ms s1zrh17.edge.init7.net (5.180.134.183)  277.033 ms  277.066 ms
