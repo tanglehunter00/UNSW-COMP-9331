@@ -1,0 +1,6 @@
+Exercies 2:
+ping -c 4 www.google.co.uk
+......
+
+Exercies 4:
+traceroute univ-grenoble-alpes.fr | tee trace.txt

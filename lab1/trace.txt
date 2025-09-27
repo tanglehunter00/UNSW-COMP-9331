@@ -1,0 +1,30 @@
+traceroute to univ-grenoble-alpes.fr (195.83.24.194), 30 hops max, 60 byte packets
+ 1  cse-servers-gateway.orchestra.cse.unsw.EDU.AU (129.94.242.1)  0.066 ms  0.068 ms  0.043 ms
+ 2  unsw-gateway.orchestra.cse.unsw.EDU.AU (129.94.39.17)  0.288 ms  0.362 ms  0.363 ms
+ 3  172.17.47.2 (172.17.47.2)  1.584 ms  1.139 ms  1.529 ms
+ 4  172.17.17.45 (172.17.17.45)  0.898 ms  0.872 ms 172.17.17.9 (172.17.17.9)  0.598 ms
+ 5  138.44.18.70 (138.44.18.70)  0.835 ms 172.17.17.33 (172.17.17.33)  0.700 ms 138.44.18.70 (138.44.18.70)  0.781 ms
+ 6  et-1-1-0.pe1.mcqp.nsw.aarnet.net.au (113.197.15.4)  1.490 ms  1.309 ms  1.277 ms
+ 7  et-0-3-0.pe1.eskp.nsw.aarnet.net.au (113.197.15.3)  2.633 ms et-1-1-0.pe1.mcqp.nsw.aarnet.net.au (113.197.15.4)  1.228 ms  1.174 ms
+ 8  et-0-3-0.pe1.eskp.nsw.aarnet.net.au (113.197.15.3)  2.355 ms *  2.707 ms
+ 9  et-0-3-0.pe1.knsg.wa.aarnet.net.au (113.197.15.45)  45.952 ms  46.044 ms et-0-3-0.pe1.prka.sa.aarnet.net.au (113.197.15.42)  20.619 ms
+10  et-1_0_5.bdr1.sing.sin.aarnet.net.au (113.197.15.231)  92.232 ms et-0-3-0.pe1.knsg.wa.aarnet.net.au (113.197.15.45)  46.122 ms et-1_0_5.bdr1.sing.sin.aarnet.net.au (113.197.15.231)  92.157 ms
+11  138.44.226.7 (138.44.226.7)  263.368 ms  263.508 ms  263.483 ms
+12  138.44.226.7 (138.44.226.7)  263.459 ms  263.436 ms  263.522 ms
+13  lag-1-0.rt0.lon.uk.geant.net (62.40.98.60)  263.393 ms lag-2-0.rt0.lon2.uk.geant.net (62.40.98.65)  264.157 ms lag-1-0.rt0.lon.uk.geant.net (62.40.98.60)  263.349 ms
+14  lag-2-0.rt0.lon2.uk.geant.net (62.40.98.65)  264.093 ms lag-8-0.rt0.par.fr.geant.net (62.40.98.107)  270.603 ms  270.490 ms
+15  lag-8-0.rt0.par.fr.geant.net (62.40.98.107)  270.589 ms  270.499 ms lag-7-0.rt0.gen.ch.geant.net (62.40.98.238)  278.437 ms
+16  ae3-0.mx1.gen.ch.geant.net (62.40.98.76)  278.601 ms lag-7-0.rt0.gen.ch.geant.net (62.40.98.238)  278.725 ms  278.383 ms
+17  ae3-0.mx1.gen.ch.geant.net (62.40.98.76)  278.560 ms renater-gw.mx1.gen.ch.geant.net (62.40.124.62)  282.548 ms ae3-0.mx1.gen.ch.geant.net (62.40.98.76)  278.516 ms
+18  hu0-2-0-2-ren-nr-lyon2-rtr-091.noc.renater.fr (193.51.180.173)  283.569 ms renater-gw.mx1.gen.ch.geant.net (62.40.124.62)  282.478 ms  282.326 ms
+19  hu0-3-0-1-ren-nr-grenoble-rtr-091.noc.renater.fr (193.55.204.15)  282.853 ms hu0-2-0-2-ren-nr-lyon2-rtr-091.noc.renater.fr (193.51.180.173)  283.712 ms  284.438 ms
+20  * hu0-3-0-1-ren-nr-grenoble-rtr-091.noc.renater.fr (193.55.204.15)  282.677 ms  282.650 ms
+21  * r-campus1.grenet.fr (193.54.185.2)  283.341 ms  282.488 ms
+22  * r-campus1.grenet.fr (193.54.185.2)  282.731 ms  282.686 ms
+23  * simsu-bb-to-uga-02-fw.u-ga.fr (152.77.39.73)  304.534 ms  304.485 ms
+24  bio-bb-to-simsu-bb.u-ga.fr (152.77.39.30)  304.318 ms simsu-bb-to-uga-02-fw.u-ga.fr (152.77.39.73)  303.460 ms bio-bb-to-simsu-bb.u-ga.fr (152.77.39.30)  297.311 ms
+25  spring-dc-fw-to-bio-bb.u-ga.fr (152.77.33.198)  283.313 ms  283.541 ms bio-bb-to-simsu-bb.u-ga.fr (152.77.39.30)  300.706 ms
+26  winter-tn-bl-1a61-to-spring-dc-fw.u-ga.fr (129.88.6.74)  284.975 ms  284.105 ms  283.971 ms
+27  aci-bb-to-ksup.u-ga.fr (195.83.24.193)  284.431 ms  283.960 ms winter-tn-bl-1a61-to-spring-dc-fw.u-ga.fr (129.88.6.74)  284.149 ms
+28  aci-bb-to-ksup.u-ga.fr (195.83.24.193)  284.306 ms  284.949 ms  284.339 ms
+29  ksup.u-ga.fr (195.83.24.194)  284.235 ms  283.580 ms  283.874 ms
