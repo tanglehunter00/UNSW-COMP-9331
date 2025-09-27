@@ -1,0 +1,89 @@
+z5641211@vx22:~/Desktop$ ping -c 4 www.google.co.uk
+PING www.google.co.uk (142.250.204.3) 56(84) bytes of data.
+64 bytes from syd09s25-in-f3.1e100.net (142.250.204.3): icmp_seq=1 ttl=116 time=1.10 ms
+64 bytes from syd09s25-in-f3.1e100.net (142.250.204.3): icmp_seq=2 ttl=116 time=1.18 ms
+64 bytes from syd09s25-in-f3.1e100.net (142.250.204.3): icmp_seq=3 ttl=116 time=1.12 ms
+64 bytes from syd09s25-in-f3.1e100.net (142.250.204.3): icmp_seq=4 ttl=116 time=1.31 ms
+
+--- www.google.co.uk ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3004ms
+rtt min/avg/max/mdev = 1.095/1.174/1.306/0.082 ms
+z5641211@vx22:~/Desktop$ ping -c 4 www.utoronto.ca
+PING www.utoronto.ca (23.185.0.1) 56(84) bytes of data.
+64 bytes from 23.185.0.1 (23.185.0.1): icmp_seq=1 ttl=57 time=0.900 ms
+64 bytes from 23.185.0.1 (23.185.0.1): icmp_seq=2 ttl=57 time=1.15 ms
+64 bytes from 23.185.0.1 (23.185.0.1): icmp_seq=3 ttl=57 time=0.818 ms
+64 bytes from 23.185.0.1 (23.185.0.1): icmp_seq=4 ttl=57 time=0.864 ms
+
+--- www.utoronto.ca ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3007ms
+rtt min/avg/max/mdev = 0.818/0.933/1.150/0.128 ms
+z5641211@vx22:~/Desktop$ ping -c 4 www.cloudflare.com 
+PING www.cloudflare.com (104.16.123.96) 56(84) bytes of data.
+64 bytes from 104.16.123.96 (104.16.123.96): icmp_seq=1 ttl=56 time=1.63 ms
+64 bytes from 104.16.123.96 (104.16.123.96): icmp_seq=2 ttl=56 time=1.59 ms
+64 bytes from 104.16.123.96 (104.16.123.96): icmp_seq=3 ttl=56 time=1.67 ms
+64 bytes from 104.16.123.96 (104.16.123.96): icmp_seq=4 ttl=56 time=1.63 ms
+
+--- www.cloudflare.com ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3005ms
+rtt min/avg/max/mdev = 1.587/1.631/1.673/0.030 ms
+z5641211@vx22:~/Desktop$ ping -c 4 ec.ho 
+ping: ec.ho: Name or service not known
+z5641211@vx22:~/Desktop$ ping -c 4 ec.ho
+ping: ec.ho: Name or service not known
+z5641211@vx22:~/Desktop$ ping -c 4 west.cn 
+PING west.cn (116.198.219.52) 56(84) bytes of data.
+64 bytes from 116.198.219.52 (116.198.219.52): icmp_seq=1 ttl=43 time=393 ms
+64 bytes from 116.198.219.52 (116.198.219.52): icmp_seq=2 ttl=43 time=394 ms
+64 bytes from 116.198.219.52 (116.198.219.52): icmp_seq=3 ttl=43 time=393 ms
+
+--- west.cn ping statistics ---
+4 packets transmitted, 3 received, 25% packet loss, time 3110ms
+rtt min/avg/max/mdev = 392.824/393.245/393.750/0.382 ms
+z5641211@vx22:~/Desktop$ ping -c 4 defence.gov.au 
+PING defence.gov.au (13.236.242.190) 56(84) bytes of data.
+
+--- defence.gov.au ping statistics ---
+4 packets transmitted, 0 received, 100% packet loss, time 3058ms
+
+z5641211@vx22:~/Desktop$ ping -c 4 yes.no 
+PING yes.no (141.193.213.11) 56(84) bytes of data.
+64 bytes from 141.193.213.11 (141.193.213.11): icmp_seq=1 ttl=56 time=1.90 ms
+64 bytes from 141.193.213.11 (141.193.213.11): icmp_seq=2 ttl=56 time=1.72 ms
+64 bytes from 141.193.213.11 (141.193.213.11): icmp_seq=3 ttl=56 time=1.69 ms
+64 bytes from 141.193.213.11 (141.193.213.11): icmp_seq=4 ttl=56 time=1.62 ms
+
+--- yes.no ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3005ms
+rtt min/avg/max/mdev = 1.617/1.729/1.897/0.103 ms
+z5641211@vx22:~/Desktop$ ping -c 4 one.one.one.one 
+PING one.one.one.one (1.1.1.1) 56(84) bytes of data.
+64 bytes from one.one.one.one (1.1.1.1): icmp_seq=1 ttl=56 time=1.64 ms
+64 bytes from one.one.one.one (1.1.1.1): icmp_seq=2 ttl=56 time=1.63 ms
+64 bytes from one.one.one.one (1.1.1.1): icmp_seq=3 ttl=56 time=1.67 ms
+64 bytes from one.one.one.one (1.1.1.1): icmp_seq=4 ttl=56 time=1.82 ms
+
+--- one.one.one.one ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3005ms
+rtt min/avg/max/mdev = 1.634/1.690/1.824/0.078 ms
+z5641211@vx22:~/Desktop$ ping -c 4 theguardian.com 
+PING theguardian.com (151.101.65.111) 56(84) bytes of data.
+64 bytes from 151.101.65.111 (151.101.65.111): icmp_seq=1 ttl=57 time=0.870 ms
+64 bytes from 151.101.65.111 (151.101.65.111): icmp_seq=2 ttl=57 time=0.873 ms
+64 bytes from 151.101.65.111 (151.101.65.111): icmp_seq=3 ttl=57 time=0.909 ms
+64 bytes from 151.101.65.111 (151.101.65.111): icmp_seq=4 ttl=57 time=0.864 ms
+
+--- theguardian.com ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3055ms
+rtt min/avg/max/mdev = 0.864/0.879/0.909/0.017 ms
+z5641211@vx22:~/Desktop$ ping -c 4 xn--i-7iq.ws 
+PING i\u2764.ws (132.148.137.119) 56(84) bytes of data.
+64 bytes from 119.137.148.132.host.secureserver.net (132.148.137.119): icmp_seq=1 ttl=48 time=144 ms
+64 bytes from 119.137.148.132.host.secureserver.net (132.148.137.119): icmp_seq=2 ttl=48 time=144 ms
+64 bytes from 119.137.148.132.host.secureserver.net (132.148.137.119): icmp_seq=3 ttl=48 time=144 ms
+64 bytes from 119.137.148.132.host.secureserver.net (132.148.137.119): icmp_seq=4 ttl=48 time=144 ms
+
+--- i\u2764.ws ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3003ms
+rtt min/avg/max/mdev = 143.955/144.075/144.139/0.071 ms
