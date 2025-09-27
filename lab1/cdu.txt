@@ -1,0 +1,18 @@
+traceroute to cdu.edu.au (138.80.162.69), 30 hops max, 60 byte packets
+ 1  cse-servers-gateway.orchestra.cse.unsw.EDU.AU (129.94.242.1)  0.065 ms  0.065 ms  0.055 ms
+ 2  unsw-gateway.orchestra.cse.unsw.EDU.AU (129.94.39.17)  0.625 ms  0.368 ms  0.490 ms
+ 3  172.17.47.11 (172.17.47.11)  2.833 ms  2.809 ms  2.785 ms
+ 4  172.17.17.49 (172.17.17.49)  0.683 ms 172.17.17.13 (172.17.17.13)  0.819 ms 172.17.17.49 (172.17.17.49)  0.637 ms
+ 5  138.44.18.70 (138.44.18.70)  0.996 ms  0.972 ms  1.308 ms
+ 6  138.44.18.70 (138.44.18.70)  1.285 ms  0.904 ms  0.875 ms
+ 7  et-0-3-0.pe1.eskp.nsw.aarnet.net.au (113.197.15.3)  2.736 ms  2.596 ms et-1-1-0.pe1.mcqp.nsw.aarnet.net.au (113.197.15.4)  1.485 ms
+ 8  et-0-3-0.pe1.eskp.nsw.aarnet.net.au (113.197.15.3)  2.657 ms * *
+ 9  et-0-3-0.pe1.adel.sa.aarnet.net.au (113.197.15.29)  22.652 ms et-0-3-0.pe1.wmlb.vic.aarnet.net.au (113.197.15.9)  14.249 ms  14.022 ms
+10  et-0-3-0.pe1.adel.sa.aarnet.net.au (113.197.15.29)  22.849 ms  22.824 ms xe-2-0-0.pe1.alsp.nt.aarnet.net.au (113.197.15.161)  39.276 ms
+11  xe-2-0-0.pe1.alsp.nt.aarnet.net.au (113.197.15.161)  39.252 ms  39.238 ms  38.993 ms
+12  xe-0-1-0.pe1.mlnr.nt.aarnet.net.au (113.197.14.148)  54.500 ms 138.44.208.34 (138.44.208.34)  54.279 ms  54.287 ms
+13  fgtcasfw2.routing.cdu.edu.au (138.80.0.250)  54.262 ms 138.44.208.34 (138.44.208.34)  54.356 ms  54.404 ms
+14  cbl2c1core1.routing.cdu.edu.au (138.80.5.105)  59.523 ms fgtcasfw2.routing.cdu.edu.au (138.80.0.250)  56.530 ms cbl2c1core1.routing.cdu.edu.au (138.80.5.105)  56.742 ms
+15  cbl2c1core1.routing.cdu.edu.au (138.80.5.105)  55.189 ms  55.105 ms  55.078 ms
+16  * * *
+17  www.cdu.edu.au (138.80.162.69)  54.571 ms  54.415 ms  54.545 ms

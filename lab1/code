@@ -4,3 +4,6 @@ ping -c 4 www.google.co.uk
 
 Exercies 4:
 traceroute univ-grenoble-alpes.fr | tee trace.txt
+traceroute stanford.edu | tee stanford.txt
+traceroute reading.ac.uk | tee reading.txt
+traceroute cdu.edu.au | tee cdu.txt

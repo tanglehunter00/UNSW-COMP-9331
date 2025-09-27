@@ -1,0 +1,19 @@
+traceroute to reading.ac.uk (134.225.0.151), 30 hops max, 60 byte packets
+ 1  cse-servers-gateway.orchestra.cse.unsw.EDU.AU (129.94.242.1)  0.063 ms  0.062 ms  0.055 ms
+ 2  unsw-gateway.orchestra.cse.unsw.EDU.AU (129.94.39.17)  0.350 ms  0.567 ms  0.544 ms
+ 3  172.17.47.11 (172.17.47.11)  7.440 ms  7.578 ms  7.566 ms
+ 4  172.17.17.13 (172.17.17.13)  0.770 ms 172.17.17.49 (172.17.17.49)  0.678 ms  0.643 ms
+ 5  172.17.17.33 (172.17.17.33)  0.786 ms 138.44.18.70 (138.44.18.70)  0.875 ms 172.17.17.33 (172.17.17.33)  0.738 ms
+ 6  et-1-1-0.pe1.mcqp.nsw.aarnet.net.au (113.197.15.4)  1.352 ms 138.44.18.70 (138.44.18.70)  0.872 ms et-1-1-0.pe1.mcqp.nsw.aarnet.net.au (113.197.15.4)  1.574 ms
+ 7  et-0-3-0.pe1.eskp.nsw.aarnet.net.au (113.197.15.3)  2.705 ms et-1-1-0.pe1.mcqp.nsw.aarnet.net.au (113.197.15.4)  1.353 ms  1.519 ms
+ 8  et-0-3-0.pe1.eskp.nsw.aarnet.net.au (113.197.15.3)  2.461 ms *  2.854 ms
+ 9  et-0-3-0.pe1.prka.sa.aarnet.net.au (113.197.15.42)  19.999 ms  19.975 ms  20.113 ms
+10  et-0-3-0.pe1.knsg.wa.aarnet.net.au (113.197.15.45)  46.037 ms et-1_0_5.bdr1.sing.sin.aarnet.net.au (113.197.15.231)  92.100 ms  92.119 ms
+11  et-1_0_5.bdr1.sing.sin.aarnet.net.au (113.197.15.231)  92.255 ms 138.44.226.7 (138.44.226.7)  263.417 ms  263.268 ms
+12  138.44.226.7 (138.44.226.7)  263.477 ms lag-1-0.rt0.lon.uk.geant.net (62.40.98.60)  263.411 ms  263.339 ms
+13  lag-1-0.rt0.lon.uk.geant.net (62.40.98.60)  263.350 ms  263.411 ms lag-2-0.rt0.lon2.uk.geant.net (62.40.98.65)  264.107 ms
+14  janet-bckp-gw.mx1.lon2.uk.geant.net (62.40.125.58)  264.641 ms  264.657 ms lag-2-0.rt0.lon2.uk.geant.net (62.40.98.65)  264.273 ms
+15  janet-bckp-gw.mx1.lon2.uk.geant.net (62.40.125.58)  265.893 ms ae19.readdy-rbr1.ja.net (146.97.37.194)  265.892 ms janet-bckp-gw.mx1.lon2.uk.geant.net (62.40.125.58)  264.692 ms
+16  ae19.readdy-rbr1.ja.net (146.97.37.194)  265.670 ms reading-university-1.ja.net (193.63.109.26)  279.613 ms  280.616 ms
+17  reading-university-1.ja.net (193.63.109.26)  280.563 ms  280.264 ms  279.757 ms
+18  alumni.reading.ac.uk (134.225.0.151)  267.089 ms 134.225.255.38 (134.225.255.38)  266.083 ms www.climateambassadors.org.uk (134.225.0.151)  267.000 ms
