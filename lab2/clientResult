@@ -1,0 +1,21 @@
+z5641211@vx08:~/Desktop/UNSW-COMP-9331/lab2$ python3 PingClient.py 127.0.0.1 9000
+PING to 127.0.0.1, seq=46419, rtt=19 ms
+PING to 127.0.0.1, seq=46420, rtt=timeout
+PING to 127.0.0.1, seq=46421, rtt=6 ms
+PING to 127.0.0.1, seq=46422, rtt=timeout
+PING to 127.0.0.1, seq=46423, rtt=119 ms
+PING to 127.0.0.1, seq=46424, rtt=27 ms
+PING to 127.0.0.1, seq=46425, rtt=timeout
+PING to 127.0.0.1, seq=46426, rtt=99 ms
+PING to 127.0.0.1, seq=46427, rtt=180 ms
+PING to 127.0.0.1, seq=46428, rtt=timeout
+PING to 127.0.0.1, seq=46429, rtt=146 ms
+PING to 127.0.0.1, seq=46430, rtt=92 ms
+PING to 127.0.0.1, seq=46431, rtt=157 ms
+PING to 127.0.0.1, seq=46432, rtt=99 ms
+PING to 127.0.0.1, seq=46433, rtt=20 ms
+
+Packet loss: 27%
+Minimum RTT: 6 ms, Maximum RTT: 180 ms, Average RTT: 88 ms
+Total transmission time: 3367 ms
+Jitter: 66 ms

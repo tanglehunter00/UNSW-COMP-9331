@@ -1,0 +1,32 @@
+z5641211@vx08:~/Desktop/UNSW-COMP-9331/lab2$ javac PingServer.java 
+z5641211@vx08:~/Desktop/UNSW-COMP-9331/lab2$ java PingServer 9000
+Received from 127.0.0.1: PING 46419 1759787383906
+   Reply sent.
+Received from 127.0.0.1: PING 46420 1759787383925
+   Reply not sent.
+Received from 127.0.0.1: PING 46421 1759787384525
+   Reply sent.
+Received from 127.0.0.1: PING 46422 1759787384531
+   Reply not sent.
+Received from 127.0.0.1: PING 46423 1759787385132
+   Reply sent.
+Received from 127.0.0.1: PING 46424 1759787385251
+   Reply sent.
+Received from 127.0.0.1: PING 46425 1759787385278
+   Reply not sent.
+Received from 127.0.0.1: PING 46426 1759787385879
+   Reply sent.
+Received from 127.0.0.1: PING 46427 1759787385978
+   Reply sent.
+Received from 127.0.0.1: PING 46428 1759787386158
+   Reply not sent.
+Received from 127.0.0.1: PING 46429 1759787386759
+   Reply sent.
+Received from 127.0.0.1: PING 46430 1759787386905
+   Reply sent.
+Received from 127.0.0.1: PING 46431 1759787386997
+   Reply sent.
+Received from 127.0.0.1: PING 46432 1759787387154
+   Reply sent.
+Received from 127.0.0.1: PING 46433 1759787387253
+   Reply sent.
