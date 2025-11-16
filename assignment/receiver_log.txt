@@ -1,0 +1,26 @@
+rcv  ok     0.00  SYN   63999     0
+snd  ok     0.06  ACK   64000     0
+rcv  ok   102.91  SYN   63999     0
+snd  ok   102.91  ACK   64000     0
+rcv  cor  104.45  DATA  64000  1000
+rcv  ok   104.46  DATA  65000  1000
+snd  ok   104.46  ACK   64000     0
+rcv  ok   104.48  DATA    464  1000
+snd  ok   104.49  ACK   64000     0
+rcv  ok   310.22  DATA  64000  1000
+snd  ok   310.24  ACK    1464     0
+rcv  ok   310.57  DATA   1464   500
+snd  ok   310.57  ACK    1964     0
+rcv  ok   310.85  FIN    1964     0
+snd  ok   310.86  ACK    1965     0
+rcv  cor  415.61  FIN    1964     0
+rcv  ok   517.98  FIN    1964     0
+snd  ok   517.99  ACK    1965     0
+Original data received:        3500
+Total data received:           3500
+Original segments received:       6
+Total segments received:         10
+Corrupted segments discarded:     2
+Duplicate segments received:      2
+Total acks sent:                  8
+Duplicate acks sent:              4
