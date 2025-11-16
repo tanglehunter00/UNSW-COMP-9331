@@ -25,7 +25,7 @@ proc finish {} {
 	#Execute nam on the trace file
     exec 3331 nam out.nam &
     # Execute gnuplot to display the two trace files tcp1.tr and tcp2.tr
-    #exec gnuplot throughput.plot &
+    exec gnuplot throughput.plot &
     exit 0
 }
 
