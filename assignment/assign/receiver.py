@@ -6,20 +6,9 @@ import threading
 import struct
 import random
 
-SEGMENT_DATA = 0
-SEGMENT_ACK = 1
-SEGMENT_SYN = 2
-SEGMENT_FIN = 3
-
-FLAG_ACK = 0x2000
-FLAG_SYN = 0x4000
-FLAG_FIN = 0x8000
-
-MSS = 1000
-HEADER_SIZE = 6
 
 
-def calculate_checksum(data):
+def CalculateChecksum(data):
     
     checksum = 0
     for i in range(0, len(data), 2):
@@ -33,23 +22,23 @@ def calculate_checksum(data):
     return (~checksum) & 0xFFFF
 
 
-def create_segment(seq_num, segment_type, payload=b''):
+def CreateSegment(seq_num, segment_type, payload=b''):
     
     seq_bytes = struct.pack('>H', seq_num)
     
     flags = 0
-    if segment_type == SEGMENT_ACK:
-        flags = FLAG_ACK
-    elif segment_type == SEGMENT_SYN:
-        flags = FLAG_SYN
-    elif segment_type == SEGMENT_FIN:
-        flags = FLAG_FIN
+    if segment_type == 1:
+        flags = 0x2000
+    elif segment_type == 2:
+        flags = 0x4000
+    elif segment_type == 3:
+        flags = 0x8000
     
     flags_bytes = struct.pack('>H', flags)
     
     temp_segment = seq_bytes + flags_bytes + b'\x00\x00' + payload
     
-    checksum = calculate_checksum(temp_segment)
+    checksum = CalculateChecksum(temp_segment)
     checksum_bytes = struct.pack('>H', checksum)
     
     segment_data = seq_bytes + flags_bytes + checksum_bytes + payload
@@ -57,9 +46,9 @@ def create_segment(seq_num, segment_type, payload=b''):
     return segment_data
 
 
-def parse_segment(segment_data):
+def ParseSegment(segment_data):
     
-    if len(segment_data) < HEADER_SIZE:
+    if len(segment_data) < 6:
         return None
     
     seq_num = struct.unpack('>H', segment_data[0:2])[0]
@@ -68,41 +57,37 @@ def parse_segment(segment_data):
     
     payload = segment_data[6:]
     
-    if flags_field & FLAG_ACK:
-        segment_type = SEGMENT_ACK
-    elif flags_field & FLAG_SYN:
-        segment_type = SEGMENT_SYN
-    elif flags_field & FLAG_FIN:
-        segment_type = SEGMENT_FIN
+    if flags_field & 0x2000:
+        segment_type = 1
+    elif flags_field & 0x4000:
+        segment_type = 2
+    elif flags_field & 0x8000:
+        segment_type = 3
     else:
-        segment_type = SEGMENT_DATA
+        segment_type = 0
     
     temp_segment = segment_data[0:4] + b'\x00\x00' + payload
-    calculated_checksum = calculate_checksum(temp_segment)
+    calculated_checksum = CalculateChecksum(temp_segment)
     
     is_valid = (calculated_checksum == received_checksum)
     
     return (seq_num, segment_type, payload, is_valid)
 
 
-def get_segment_type_name(segment_type):
+def GetSegmentTypeName(segment_type):
     
-    if segment_type == SEGMENT_DATA:
+    if segment_type == 0:
         return "DATA"
-    elif segment_type == SEGMENT_ACK:
+    elif segment_type == 1:
         return "ACK"
-    elif segment_type == SEGMENT_SYN:
+    elif segment_type == 2:
         return "SYN"
-    elif segment_type == SEGMENT_FIN:
+    elif segment_type == 3:
         return "FIN"
     return "UNKNOWN"
 
-STATE_CLOSED = 0
-STATE_ESTABLISHED = 1
-STATE_TIME_WAIT = 2
 
-
-class URPReceiver:
+class UrpReceiver:
     
     
     def __init__(self, receiver_port, sender_port, output_filename, max_win):
@@ -116,7 +101,7 @@ class URPReceiver:
         self.sock.bind(('localhost', receiver_port))
         self.sock.settimeout(0.1)
         
-        self.state = STATE_CLOSED
+        self.state = 0
         self.expected_seq = None
         self.isn = None
         
@@ -139,43 +124,43 @@ class URPReceiver:
             'duplicate_acks_sent': 0
         }
     
-    def log(self, direction, status, segment_type, seq_num, payload_len):
+    def Log(self, direction, status, segment_type, seq_num, payload_len):
         
         if self.start_time is None:
             return
         elapsed = (time.time() - self.start_time) * 1000
-        type_name = get_segment_type_name(segment_type)
+        type_name = GetSegmentTypeName(segment_type)
         self.log_entries.append(
             f"{direction}  {status:3s}  {elapsed:7.2f}  {type_name:4s}  {seq_num:5d}  {payload_len:5d}\n"
         )
     
-    def send_ack(self, ack_num):
+    def SendAck(self, ack_num):
         
-        seg = create_segment(ack_num, SEGMENT_ACK)
+        seg = CreateSegment(ack_num, 1)
         try:
-            print(f"[Receiver] Sending ACK: ack_num={ack_num}, to port {self.sender_port}, segment_size={len(seg)}")
+            print(f"Sending ACK: ack_num={ack_num}, to port {self.sender_port}, segment_size={len(seg)}")
             self.sock.sendto(seg, ('localhost', self.sender_port))
-            self.log('snd', 'ok', SEGMENT_ACK, ack_num, 0)
+            self.Log('snd', 'ok', 1, ack_num, 0)
             self.stats['total_acks_sent'] += 1
-            print(f"[Receiver] ACK sent successfully to localhost:{self.sender_port}")
+            print(f"ACK sent successfully to localhost:{self.sender_port}")
         except Exception as e:
-            print(f"[Receiver] Error sending ACK: {e}")
+            print(f"Error sending ACK: {e}")
             import traceback
             traceback.print_exc()
     
-    def is_duplicate(self, seq_num, payload_len):
+    def IsDuplicate(self, seq_num, payload_len):
         
         for i in range(seq_num, seq_num + payload_len):
             if i in self.received_bytes:
                 return True
         return False
     
-    def mark_received(self, seq_num, payload_len):
+    def MarkReceived(self, seq_num, payload_len):
         
         for i in range(seq_num, seq_num + payload_len):
             self.received_bytes.add(i)
     
-    def write_continuous_data(self):
+    def WriteContinuousData(self):
         
         while self.expected_seq in self.buffer:
             payload = self.buffer[self.expected_seq]
@@ -190,19 +175,19 @@ class URPReceiver:
             
             self.expected_seq += len(payload)
     
-    def handle_data_segment(self, seq_num, payload):
+    def HandleDataSegment(self, seq_num, payload):
         
         payload_len = len(payload)
         
-        is_dup = self.is_duplicate(seq_num, payload_len)
+        is_dup = self.IsDuplicate(seq_num, payload_len)
         
         if is_dup:
             self.stats['duplicate_segments_received'] += 1
-            self.send_ack(self.expected_seq)
+            self.SendAck(self.expected_seq)
             self.stats['duplicate_acks_sent'] += 1
             return
         
-        self.mark_received(seq_num, payload_len)
+        self.MarkReceived(seq_num, payload_len)
         
         if seq_num == self.expected_seq:
             if self.file:
@@ -214,63 +199,63 @@ class URPReceiver:
             self.stats['original_segments_received'] += 1
             self.stats['total_segments_received'] += 1
             
-            print(f"[Receiver] Received in-order DATA: seq={seq_num}, len={len(payload)}, expected_seq={self.expected_seq}")
+            print(f"Received in-order DATA: seq={seq_num}, len={len(payload)}, expected_seq={self.expected_seq}")
             
             self.expected_seq += payload_len
             
-            self.send_ack(self.expected_seq)
+            self.SendAck(self.expected_seq)
             
-            self.write_continuous_data()
+            self.WriteContinuousData()
         else:
             if seq_num > self.expected_seq:
-                print(f"[Receiver] Received out-of-order DATA: seq={seq_num}, expected_seq={self.expected_seq}, buffering...")
+                print(f"Received out-of-order DATA: seq={seq_num}, expected_seq={self.expected_seq}, buffering...")
                 self.buffer[seq_num] = payload
                 self.stats['total_data_received'] += len(payload)
                 self.stats['total_segments_received'] += 1
-            self.send_ack(self.expected_seq)
+            self.SendAck(self.expected_seq)
             self.stats['duplicate_acks_sent'] += 1
     
-    def run(self):
+    def Run(self):
         
         try:
             self.file = open(self.output_filename, 'wb')
         except Exception as e:
             return
         
-        print(f"[Receiver] Waiting for SYN...")
+        print(f"Waiting for SYN...")
         syn_received = False
         while not syn_received:
             try:
                 data, addr = self.sock.recvfrom(2048)
                 
-                parsed = parse_segment(data)
+                parsed = ParseSegment(data)
                 if not parsed:
                     continue
                 
                 seq_num, seg_type, payload, is_valid = parsed
                 
                 if not is_valid:
-                    print(f"[Receiver] Received corrupted SYN, discarding...")
+                    print(f"Received corrupted SYN, discarding...")
                     self.stats['corrupted_segments_discarded'] += 1
-                    self.log('rcv', 'cor', seg_type, seq_num, 0)
+                    self.Log('rcv', 'cor', seg_type, seq_num, 0)
                     continue
                 
-                if seg_type == SEGMENT_SYN:
+                if seg_type == 2:
                     if self.isn is not None and seq_num == self.isn:
-                        print(f"[Receiver] Received duplicate SYN, resending ACK...")
-                        self.send_ack(self.expected_seq)
+                        print(f"Received duplicate SYN, resending ACK...")
+                        self.SendAck(self.expected_seq)
                     else:
-                        print(f"[Receiver] Received SYN: ISN={seq_num}, sending ACK...")
+                        print(f"Received SYN: ISN={seq_num}, sending ACK...")
                         self.isn = seq_num
                         self.expected_seq = seq_num + 1
-                        self.state = STATE_ESTABLISHED
+                        self.state = 1
                         syn_received = True
                         self.start_time = time.time()
                         
-                        self.log('rcv', 'ok', SEGMENT_SYN, seq_num, 0)
+                        self.Log('rcv', 'ok', 2, seq_num, 0)
                         
-                        self.send_ack(self.expected_seq)
-                        print(f"[Receiver] Connection established! Waiting for data...")
+                        self.SendAck(self.expected_seq)
+                        print(f"Connection established! Waiting for data...")
                     break
             
             except socket.timeout:
@@ -281,67 +266,67 @@ class URPReceiver:
         fin_received = False
         fin_ack_num = None
         
-        while self.state == STATE_ESTABLISHED or self.state == STATE_TIME_WAIT:
+        while self.state == 1 or self.state == 2:
             try:
                 data, addr = self.sock.recvfrom(2048)
                 
-                parsed = parse_segment(data)
+                parsed = ParseSegment(data)
                 if not parsed:
                     continue
                 
                 seq_num, seg_type, payload, is_valid = parsed
                 
                 if not is_valid:
-                    print(f"[Receiver] Received corrupted segment: type={seg_type}, seq={seq_num}, discarding...")
+                    print(f"Received corrupted segment: type={seg_type}, seq={seq_num}, discarding...")
                     self.stats['corrupted_segments_discarded'] += 1
-                    self.log('rcv', 'cor', seg_type, seq_num, len(payload) if seg_type == SEGMENT_DATA else 0)
+                    self.Log('rcv', 'cor', seg_type, seq_num, len(payload) if seg_type == 0 else 0)
                     continue
                 
-                if seg_type == SEGMENT_SYN and seq_num == self.isn:
-                    self.send_ack(self.expected_seq)
+                if seg_type == 2 and seq_num == self.isn:
+                    self.SendAck(self.expected_seq)
                     continue
                 
-                if self.state == STATE_TIME_WAIT and seg_type == SEGMENT_FIN:
+                if self.state == 2 and seg_type == 3:
                     if seq_num == fin_ack_num - 1:
-                        print(f"[Receiver] Received retransmitted FIN in TIME_WAIT, resending ACK...")
-                        self.send_ack(fin_ack_num)
+                        print(f"Received retransmitted FIN in TIME_WAIT, resending ACK...")
+                        self.SendAck(fin_ack_num)
                         continue
                 
-                if seg_type == SEGMENT_DATA:
-                    self.log('rcv', 'ok', SEGMENT_DATA, seq_num, len(payload))
-                elif seg_type == SEGMENT_FIN:
-                    self.log('rcv', 'ok', SEGMENT_FIN, seq_num, 0)
+                if seg_type == 0:
+                    self.Log('rcv', 'ok', 0, seq_num, len(payload))
+                elif seg_type == 3:
+                    self.Log('rcv', 'ok', 3, seq_num, 0)
                 
-                if seg_type == SEGMENT_DATA:
-                    if self.state == STATE_ESTABLISHED:
-                        self.handle_data_segment(seq_num, payload)
-                elif seg_type == SEGMENT_FIN and not fin_received:
-                    print(f"[Receiver] Received FIN, sending ACK and entering TIME_WAIT...")
+                if seg_type == 0:
+                    if self.state == 1:
+                        self.HandleDataSegment(seq_num, payload)
+                elif seg_type == 3 and not fin_received:
+                    print(f"Received FIN, sending ACK and entering TIME_WAIT...")
                     fin_ack_num = seq_num + 1
-                    self.send_ack(fin_ack_num)
+                    self.SendAck(fin_ack_num)
                     fin_received = True
                     
-                    self.state = STATE_TIME_WAIT
-                    print(f"[Receiver] TIME_WAIT (2 seconds)...")
+                    self.state = 2
+                    print(f"TIME_WAIT (2 seconds)...")
                     time_wait_start = time.time()
                     while time.time() - time_wait_start < 2.0:
                         try:
                             self.sock.settimeout(0.1)
                             data, addr = self.sock.recvfrom(2048)
-                            parsed = parse_segment(data)
+                            parsed = ParseSegment(data)
                             if parsed:
                                 seq_num, seg_type, payload, is_valid = parsed
-                                if is_valid and seg_type == SEGMENT_FIN and seq_num == fin_ack_num - 1:
-                                    print(f"[Receiver] Received retransmitted FIN in TIME_WAIT, resending ACK...")
-                                    self.send_ack(fin_ack_num)
+                                if is_valid and seg_type == 3 and seq_num == fin_ack_num - 1:
+                                    print(f"Received retransmitted FIN in TIME_WAIT, resending ACK...")
+                                    self.SendAck(fin_ack_num)
                                     time_wait_start = time.time()
                         except socket.timeout:
                             continue
                         except Exception:
                             break
                     
-                    self.state = STATE_CLOSED
-                    print(f"[Receiver] Connection closed!")
+                    self.state = 0
+                    print(f"Connection closed!")
                     break
             
             except socket.timeout:
@@ -354,9 +339,9 @@ class URPReceiver:
         
         self.sock.close()
         
-        self.write_log()
+        self.WriteLog()
     
-    def write_log(self):
+    def WriteLog(self):
         
         with open('receiver_log.txt', 'w') as f:
             for entry in self.log_entries:
@@ -372,7 +357,7 @@ class URPReceiver:
             f.write(f"Duplicate acks sent:          {self.stats['duplicate_acks_sent']:5d}\n")
 
 
-def main():
+if __name__ == '__main__':
     if len(sys.argv) != 5:
         print("Usage: python3 receiver.py receiver_port sender_port output_filename max_win")
         sys.exit(1)
@@ -382,10 +367,6 @@ def main():
     output_filename = sys.argv[3]
     max_win = int(sys.argv[4])
     
-    receiver = URPReceiver(receiver_port, sender_port, output_filename, max_win)
-    receiver.run()
-
-
-if __name__ == '__main__':
-    main()
+    receiver = UrpReceiver(receiver_port, sender_port, output_filename, max_win)
+    receiver.Run()
 

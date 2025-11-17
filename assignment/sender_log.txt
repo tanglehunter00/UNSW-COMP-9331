@@ -1,15 +1,15 @@
-snd  ok      0.35  SYN   34034      0
-rcv  ok      0.86  ACK   34035      0
-snd  ok     11.72  DATA  34035   1000
-rcv  ok     12.40  ACK   35035      0
-snd  ok     12.41  DATA  35035   1000
-rcv  ok     13.06  ACK   36035      0
-snd  ok     13.27  DATA  36035   1000
-rcv  ok     13.60  ACK   37035      0
-snd  ok     13.78  DATA  37035    500
-rcv  ok     14.11  ACK   37535      0
-snd  ok     24.46  FIN   37535      0
-rcv  ok     25.05  ACK   37536      0
+snd  ok      0.38  SYN   47325      0
+rcv  ok      0.82  ACK   47326      0
+snd  ok     11.50  DATA  47326   1000
+rcv  ok     12.10  ACK   48326      0
+snd  ok     12.11  DATA  48326   1000
+snd  ok     12.66  DATA  49326   1000
+rcv  ok     12.81  ACK   49326      0
+snd  ok     13.05  DATA  50326    500
+rcv  ok     13.24  ACK   50326      0
+rcv  ok     13.58  ACK   50826      0
+snd  ok     24.05  FIN   50826      0
+rcv  ok     24.48  ACK   50827      0
 Original data sent:             3500
 Total data sent:                3500
 Original segments sent:            4

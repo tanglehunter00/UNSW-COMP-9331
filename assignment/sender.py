@@ -157,7 +157,7 @@ class UrpSender:
         self.sock.settimeout(0.1)
         print(f"[Sender] Socket bound successfully")
         
-        self.state = STATE_CLOSED
+        self.state = 0
         self.isn = None
         self.next_seq = None
         self.base = None
@@ -295,14 +295,14 @@ class UrpSender:
             parsed = ParseSegment(seg_data)
             if parsed:
                 seg_seq, seg_type, _, _ = parsed
-                if seg_type == SEGMENT_DATA:
+                if seg_type == 0:
                     end_seq = seg_seq + payload_len
                 else:
                     end_seq = seg_seq + 1
                 
                 if end_seq <= ack_num:
                     acked_seqs.append(seq)
-                    if seg_type == SEGMENT_DATA:
+                    if seg_type == 0:
                         self.unacked_bytes -= payload_len
         
         for seq in acked_seqs:
@@ -367,7 +367,7 @@ class UrpSender:
                         print(f"[Sender] Received ACK in SYN_SENT state: seq={seq_num}, expected={self.isn + 1}")
                         if seq_num == self.isn + 1:
                             print(f"[Sender] Received SYN ACK, connection established!")
-                            self.state = STATE_ESTABLISHED
+                            self.state = 2
                             self.base = self.isn + 1
                             self.next_seq = self.isn + 1
                             self.StopTimer()
@@ -378,7 +378,7 @@ class UrpSender:
                     elif self.state == 3:
                         if seq_num == self.next_seq:
                             print(f"[Sender] Received FIN ACK, closing connection...")
-                            self.state = STATE_CLOSED
+                            self.state = 0
                             self.StopTimer()
                             break
             
@@ -395,7 +395,7 @@ class UrpSender:
         while self.state == 2:
             if self.file_pos >= self.file_size and len(self.window) == 0:
                 print(f"[Sender] All data sent and acknowledged, sending FIN...")
-                self.state = STATE_FIN_SENT
+                self.state = 3
                 fin_seq = self.next_seq
                 self.SendSegment(fin_seq, 3)
                 self.window[fin_seq] = (
@@ -460,9 +460,9 @@ class UrpSender:
         self.start_time = time.time()
         
         print(f"[Sender] Starting connection, ISN={self.isn}")
-        self.SendSegment(self.isn, SEGMENT_SYN)
+        self.SendSegment(self.isn, 2)
         self.window[self.isn] = (
-            CreateSegment(self.isn, SEGMENT_SYN),
+            CreateSegment(self.isn, 2),
             0, time.time()
         )
         self.next_seq = self.isn + 1
@@ -471,13 +471,13 @@ class UrpSender:
         
         max_wait_time = 30
         wait_start = time.time()
-        while self.state == STATE_SYN_SENT:
+        while self.state == 1:
             if time.time() - wait_start > max_wait_time:
                 print(f"[Sender] Connection establishment timeout!")
                 return
             time.sleep(0.01)
         
-        if self.state != STATE_ESTABLISHED:
+        if self.state != 2:
             print(f"[Sender] Connection not established, state={self.state}")
             return
         
@@ -487,7 +487,7 @@ class UrpSender:
         print(f"[Sender] Waiting for FIN ACK...")
         max_wait_time = 30
         wait_start = time.time()
-        while self.state == STATE_FIN_SENT:
+        while self.state == 3:
             if time.time() - wait_start > max_wait_time:
                 print(f"[Sender] FIN ACK timeout!")
                 return
@@ -522,7 +522,7 @@ class UrpSender:
             f.write(f"PLC reverse segments corrupted: {self.stats['plc_reverse_segments_corrupted']:5d}\n")
 
 
-def Main():
+if __name__ == '__main__':
     if len(sys.argv) != 10:
         print("Usage: python3 sender.py sender_port receiver_port filename max_win rto flp rlp fcp rcp")
         sys.exit(1)
@@ -540,8 +540,4 @@ def Main():
     sender = UrpSender(sender_port, receiver_port, filename, max_win, rto,
                        flp, rlp, fcp, rcp)
     sender.Run()
-
-
-if __name__ == '__main__':
-    Main()
 
