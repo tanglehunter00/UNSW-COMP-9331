@@ -1,91 +1,185 @@
-"""
-URP Sender Implementation
-实现基于UDP的可靠传输协议发送方
-"""
+
 import socket
 import sys
 import time
 import threading
 import struct
-import segment
-import plc
-
-# 段类型
-SEGMENT_DATA = segment.SEGMENT_DATA
-SEGMENT_ACK = segment.SEGMENT_ACK
-SEGMENT_SYN = segment.SEGMENT_SYN
-SEGMENT_FIN = segment.SEGMENT_FIN
-
-# 状态常量
-STATE_CLOSED = 0
-STATE_SYN_SENT = 1
-STATE_ESTABLISHED = 2
-STATE_FIN_SENT = 3
+import random
 
 
-class URPSender:
-    """URP发送方实现"""
+
+def CalculateChecksum(data):
+    
+    checksum = 0
+    for i in range(0, len(data), 2):
+        if i + 1 < len(data):
+            word = (data[i] << 8) + data[i + 1]
+        else:
+            word = (data[i] << 8)
+        checksum += word
+        while checksum >> 16:
+            checksum = (checksum & 0xFFFF) + (checksum >> 16)
+    return (~checksum) & 0xFFFF
+
+
+def CreateSegment(seq_num, segment_type, payload=b''):
+    
+    seq_bytes = struct.pack('>H', seq_num)
+    
+    flags = 0
+    if segment_type == 1:
+        flags = 0x2000
+    elif segment_type == 2:
+        flags = 0x4000
+    elif segment_type == 3:
+        flags = 0x8000
+    
+    flags_bytes = struct.pack('>H', flags)
+    
+    temp_segment = seq_bytes + flags_bytes + b'\x00\x00' + payload
+    
+    checksum = CalculateChecksum(temp_segment)
+    checksum_bytes = struct.pack('>H', checksum)
+    
+    segment_data = seq_bytes + flags_bytes + checksum_bytes + payload
+    
+    return segment_data
+
+
+def ParseSegment(segment_data):
+    
+    if len(segment_data) < 6:
+        return None
+    
+    seq_num = struct.unpack('>H', segment_data[0:2])[0]
+    flags_field = struct.unpack('>H', segment_data[2:4])[0]
+    received_checksum = struct.unpack('>H', segment_data[4:6])[0]
+    
+    payload = segment_data[6:]
+    
+    if flags_field & 0x2000:
+        segment_type = 1
+    elif flags_field & 0x4000:
+        segment_type = 2
+    elif flags_field & 0x8000:
+        segment_type = 3
+    else:
+        segment_type = 0
+    
+    temp_segment = segment_data[0:4] + b'\x00\x00' + payload
+    calculated_checksum = CalculateChecksum(temp_segment)
+    
+    is_valid = (calculated_checksum == received_checksum)
+    
+    return (seq_num, segment_type, payload, is_valid)
+
+
+def CorruptSegment(segment_data):
+    
+    if len(segment_data) <= 4:
+        byte_idx = random.randint(0, len(segment_data) - 1)
+    else:
+        byte_idx = random.randint(4, len(segment_data) - 1)
+    
+    bit_idx = random.randint(0, 7)
+    corrupted = bytearray(segment_data)
+    corrupted[byte_idx] ^= (1 << bit_idx)
+    
+    return bytes(corrupted)
+
+
+def GetSegmentTypeName(segment_type):
+    
+    if segment_type == 0:
+        return "DATA"
+    elif segment_type == 1:
+        return "ACK"
+    elif segment_type == 2:
+        return "SYN"
+    elif segment_type == 3:
+        return "FIN"
+    return "UNKNOWN"
+
+
+class Plc:
+    
+    
+    def __init__(self, flp, rlp, fcp, rcp):
+        
+        self.flp = flp
+        self.rlp = rlp
+        self.fcp = fcp
+        self.rcp = rcp
+    
+    def ProcessForward(self, segment_data):
+        
+        rand = random.random()
+        
+        if rand < self.flp:
+            return (None, 'drp')
+        elif rand < self.flp + self.fcp:
+            corrupted = CorruptSegment(segment_data)
+            return (corrupted, 'cor')
+        else:
+            return (segment_data, 'ok')
+    
+    def ProcessReverse(self, segment_data):
+        
+        rand = random.random()
+        
+        if rand < self.rlp:
+            return (None, 'drp')
+        elif rand < self.rlp + self.rcp:
+            corrupted = CorruptSegment(segment_data)
+            return (corrupted, 'cor')
+        else:
+            return (segment_data, 'ok')
+
+
+
+class UrpSender:
+    
     
     def __init__(self, sender_port, receiver_port, filename, max_win, rto, 
                  flp, rlp, fcp, rcp):
-        """
-        初始化发送方
         
-        Args:
-            sender_port: 发送方端口
-            receiver_port: 接收方端口
-            filename: 要发送的文件名
-            max_win: 最大窗口大小（字节）
-            rto: 超时重传时间（秒）
-            flp: forward loss probability
-            rlp: reverse loss probability
-            fcp: forward corruption probability
-            rcp: reverse corruption probability
-        """
         self.sender_port = sender_port
         self.receiver_port = receiver_port
         self.filename = filename
         self.max_win = max_win
         self.rto = rto
         
-        # PLC模块
-        self.plc = plc.PLC(flp, rlp, fcp, rcp)
+        self.plc = Plc(flp, rlp, fcp, rcp)
         
-        # UDP socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        print(f"[Sender] Binding socket to localhost:{sender_port}")
         self.sock.bind(('localhost', sender_port))
-        self.sock.settimeout(0.1)  # 用于接收时的超时
+        self.sock.settimeout(0.1)
+        print(f"[Sender] Socket bound successfully")
         
-        # 协议状态
         self.state = STATE_CLOSED
-        self.isn = None  # Initial Sequence Number
-        self.next_seq = None  # 下一个要发送的序列号
-        self.base = None  # 窗口左边界（最小的未确认序列号）
+        self.isn = None
+        self.next_seq = None
+        self.base = None
         
-        # 滑动窗口
-        self.window = {}  # {seq_num: (segment_data, payload_len, send_time)}
-        self.unacked_bytes = 0  # 未确认的字节数
+        self.window = {}
+        self.unacked_bytes = 0
         
-        # 文件读取
         self.file = None
         self.file_size = 0
-        self.file_pos = 0  # 已读取的文件位置
+        self.file_pos = 0
         
-        # 计时器
         self.timer = None
         self.timer_lock = threading.Lock()
         self.timer_running = False
         self.oldest_unacked_seq = None
         
-        # 快速重传
-        self.dup_ack_count = {}  # {ack_num: count}
+        self.dup_ack_count = {}
         self.last_ack = None
         
-        # 日志
         self.log_entries = []
         self.start_time = None
         
-        # 统计信息
         self.stats = {
             'original_data_sent': 0,
             'total_data_sent': 0,
@@ -101,44 +195,37 @@ class URPSender:
             'plc_reverse_segments_corrupted': 0
         }
     
-    def log(self, direction, status, segment_type, seq_num, payload_len):
-        """记录日志"""
+    def Log(self, direction, status, segment_type, seq_num, payload_len):
+        
         if self.start_time is None:
             return
-        elapsed = (time.time() - self.start_time) * 1000  # 转换为毫秒
-        type_name = segment.get_segment_type_name(segment_type)
+        elapsed = (time.time() - self.start_time) * 1000
+        type_name = GetSegmentTypeName(segment_type)
         self.log_entries.append(
             f"{direction}  {status:3s}  {elapsed:7.2f}  {type_name:4s}  {seq_num:5d}  {payload_len:5d}\n"
         )
     
-    def send_segment(self, seq_num, segment_type, payload=b''):
-        """
-        发送段（通过PLC处理）
+    def SendSegment(self, seq_num, segment_type, payload=b'', is_retransmission=False):
         
-        Returns:
-            tuple: (sent, status) - sent表示是否实际发送，status是状态
-        """
-        seg = segment.create_segment(seq_num, segment_type, payload)
+        seg = CreateSegment(seq_num, segment_type, payload)
         
-        # 通过PLC处理
-        processed_seg, status = self.plc.process_forward(seg)
+        processed_seg, status = self.plc.ProcessForward(seg)
         
         if status == 'drp':
-            # 丢包，不发送
             self.stats['plc_forward_segments_dropped'] += 1
-            self.log('snd', 'drp', segment_type, seq_num, len(payload))
+            self.Log('snd', 'drp', segment_type, seq_num, len(payload))
             return (False, 'drp')
         
-        # 发送（可能已损坏）
         if processed_seg:
             try:
                 self.sock.sendto(processed_seg, ('localhost', self.receiver_port))
-                self.log('snd', status, segment_type, seq_num, len(payload))
+                self.Log('snd', status, segment_type, seq_num, len(payload))
                 
-                if segment_type == SEGMENT_DATA:
-                    self.stats['original_data_sent'] += len(payload)
+                if segment_type == 0:
+                    if not is_retransmission:
+                        self.stats['original_data_sent'] += len(payload)
+                        self.stats['original_segments_sent'] += 1
                     self.stats['total_data_sent'] += len(payload)
-                    self.stats['original_segments_sent'] += 1
                     self.stats['total_segments_sent'] += 1
                 else:
                     self.stats['total_segments_sent'] += 1
@@ -148,293 +235,279 @@ class URPSender:
                 
                 return (True, status)
             except Exception as e:
-                print(f"Send error: {e}")
                 return (False, 'drp')
         
         return (False, 'drp')
     
-    def start_timer(self, seq_num):
-        """启动计时器（单计时器，只跟踪oldest unacked）"""
+    def StartTimer(self, seq_num):
+        
         with self.timer_lock:
             if not self.timer_running:
                 self.oldest_unacked_seq = seq_num
                 self.timer_running = True
-                threading.Thread(target=self._timer_thread, daemon=True).start()
+                threading.Thread(target=self._TimerThread, daemon=True).start()
     
-    def stop_timer(self):
-        """停止计时器"""
+    def StopTimer(self):
+        
         with self.timer_lock:
             self.timer_running = False
     
-    def _timer_thread(self):
-        """计时器线程"""
+    def _TimerThread(self):
+        
         while self.timer_running:
             time.sleep(self.rto)
             with self.timer_lock:
                 if not self.timer_running:
                     break
                 if self.oldest_unacked_seq is not None and self.oldest_unacked_seq in self.window:
-                    # 超时重传
                     seg_data, payload_len, _ = self.window[self.oldest_unacked_seq]
-                    seq_num, seg_type, payload, _ = segment.parse_segment(seg_data)
-                    
-                    # 重传
-                    self.send_segment(seq_num, seg_type, payload)
-                    self.stats['timeout_retransmissions'] += 1
-                    self.stats['total_segments_sent'] += 1
-                    if seg_type == SEGMENT_DATA:
-                        self.stats['total_data_sent'] += len(payload)
-                    
-                    # 更新发送时间
-                    self.window[self.oldest_unacked_seq] = (
-                        seg_data, payload_len, time.time()
-                    )
+                    parsed = ParseSegment(seg_data)
+                    if parsed:
+                        seq_num, seg_type, payload, _ = parsed
+                        print(f"[Sender] Timeout! Retransmitting segment: type={GetSegmentTypeName(seg_type)}, seq={seq_num}")
+                        self.SendSegment(seq_num, seg_type, payload, is_retransmission=True)
+                        self.stats['timeout_retransmissions'] += 1
+                        
+                        self.window[self.oldest_unacked_seq] = (
+                            seg_data, payload_len, time.time()
+                        )
     
-    def handle_ack(self, ack_num):
-        """处理ACK"""
+    def HandleAck(self, ack_num):
+        
         if ack_num <= self.base:
-            # 旧的或重复的ACK
             if ack_num == self.base:
                 self.stats['duplicate_acks_received'] += 1
-                # 快速重传检测
                 self.dup_ack_count[ack_num] = self.dup_ack_count.get(ack_num, 0) + 1
                 if self.dup_ack_count[ack_num] == 3:
-                    # 快速重传
                     if self.base in self.window:
                         seg_data, payload_len, _ = self.window[self.base]
-                        seq_num, seg_type, payload, _ = segment.parse_segment(seg_data)
-                        self.send_segment(seq_num, seg_type, payload)
-                        self.stats['fast_retransmissions'] += 1
-                        self.stats['total_segments_sent'] += 1
-                        if seg_type == SEGMENT_DATA:
-                            self.stats['total_data_sent'] += len(payload)
-                        self.window[self.base] = (seg_data, payload_len, time.time())
+                        parsed = ParseSegment(seg_data)
+                        if parsed:
+                            seq_num, seg_type, payload, _ = parsed
+                            self.SendSegment(seq_num, seg_type, payload, is_retransmission=True)
+                            self.stats['fast_retransmissions'] += 1
+                            self.window[self.base] = (seg_data, payload_len, time.time())
             return
         
-        # 新的ACK，更新窗口
         acked_seqs = []
         for seq in sorted(self.window.keys()):
             seg_data, payload_len, _ = self.window[seq]
-            parsed = segment.parse_segment(seg_data)
+            parsed = ParseSegment(seg_data)
             if parsed:
                 seg_seq, seg_type, _, _ = parsed
-                # 计算该段的结束序列号
                 if seg_type == SEGMENT_DATA:
                     end_seq = seg_seq + payload_len
                 else:
-                    end_seq = seg_seq + 1  # SYN/FIN消耗1个序列号
+                    end_seq = seg_seq + 1
                 
                 if end_seq <= ack_num:
                     acked_seqs.append(seq)
                     if seg_type == SEGMENT_DATA:
                         self.unacked_bytes -= payload_len
-                    # SYN/FIN不占用unacked_bytes（因为它们没有payload）
         
-        # 移除已确认的段
         for seq in acked_seqs:
             del self.window[seq]
         
-        # 更新base
         if acked_seqs:
+            print(f"[Sender] Received ACK: {ack_num}, acknowledged {len(acked_seqs)} segments, window_size={len(self.window)}, unacked_bytes={self.unacked_bytes}")
             self.base = ack_num
-            # 清除旧的重复ACK计数
             self.dup_ack_count.clear()
-            # 更新oldest unacked
             if self.window:
                 self.oldest_unacked_seq = min(self.window.keys())
-                # 重启计时器
                 if not self.timer_running:
-                    self.start_timer(self.oldest_unacked_seq)
+                    self.StartTimer(self.oldest_unacked_seq)
             else:
                 self.oldest_unacked_seq = None
-                self.stop_timer()
+                self.StopTimer()
         
         self.last_ack = ack_num
     
-    def receive_loop(self):
-        """接收循环"""
-        while self.state != STATE_CLOSED:
+    def ReceiveLoop(self):
+        
+        print(f"[Sender] Receive loop started, listening on port {self.sender_port}")
+        while self.state != 0:
             try:
                 data, addr = self.sock.recvfrom(2048)
+                print(f"[Sender] Received UDP packet from {addr}, size={len(data)}")
                 
-                # 通过PLC处理反向段
-                processed_data, status = self.plc.process_reverse(data)
+                processed_data, status = self.plc.ProcessReverse(data)
                 
                 if status == 'drp':
+                    print(f"[Sender] ACK dropped by PLC (reverse loss)")
                     self.stats['plc_reverse_segments_dropped'] += 1
                     continue
                 
                 if not processed_data:
                     continue
                 
-                # 解析段
-                parsed = segment.parse_segment(processed_data)
+                if status == 'cor':
+                    print(f"[Sender] ACK corrupted by PLC (reverse corruption)")
+                
+                parsed = ParseSegment(processed_data)
                 if not parsed:
                     continue
                 
                 seq_num, seg_type, payload, is_valid = parsed
                 
                 if not is_valid:
-                    # 校验失败
+                    print(f"[Sender] Received corrupted ACK: seq={seq_num}, discarding...")
                     self.stats['corrupted_acks_discarded'] += 1
-                    self.log('rcv', 'cor', seg_type, seq_num, 0)
+                    self.Log('rcv', 'cor', seg_type, seq_num, 0)
                     continue
                 
-                # 记录日志
-                self.log('rcv', status, seg_type, seq_num, 0)
+                self.Log('rcv', status, seg_type, seq_num, 0)
                 if status == 'cor':
                     self.stats['plc_reverse_segments_corrupted'] += 1
+                    print(f"[Sender] Received corrupted ACK (after PLC): seq={seq_num}")
+                else:
+                    print(f"[Sender] Received ACK (status={status}): seq={seq_num}, state={self.state}")
                 
-                # 处理ACK
-                if seg_type == SEGMENT_ACK:
-                    if self.state == STATE_SYN_SENT:
-                        # 连接建立ACK
+                if seg_type == 1:
+                    if self.state == 1:
+                        print(f"[Sender] Received ACK in SYN_SENT state: seq={seq_num}, expected={self.isn + 1}")
                         if seq_num == self.isn + 1:
+                            print(f"[Sender] Received SYN ACK, connection established!")
                             self.state = STATE_ESTABLISHED
                             self.base = self.isn + 1
                             self.next_seq = self.isn + 1
-                            self.stop_timer()
-                    elif self.state == STATE_ESTABLISHED:
-                        # 数据ACK
-                        self.handle_ack(seq_num)
-                    elif self.state == STATE_FIN_SENT:
-                        # FIN的ACK
+                            self.StopTimer()
+                        else:
+                            print(f"[Sender] ACK seq mismatch: got {seq_num}, expected {self.isn + 1}")
+                    elif self.state == 2:
+                        self.HandleAck(seq_num)
+                    elif self.state == 3:
                         if seq_num == self.next_seq:
+                            print(f"[Sender] Received FIN ACK, closing connection...")
                             self.state = STATE_CLOSED
-                            self.stop_timer()
+                            self.StopTimer()
                             break
             
             except socket.timeout:
                 continue
             except Exception as e:
-                print(f"Receive error: {e}")
+                print(f"[Sender] Error in receive_loop: {e}")
+                import traceback
+                traceback.print_exc()
                 break
     
-    def send_data(self):
-        """发送数据（在ESTABLISHED状态下）"""
-        while self.state == STATE_ESTABLISHED:
-            # 检查是否所有数据已发送且已确认
+    def SendData(self):
+        
+        while self.state == 2:
             if self.file_pos >= self.file_size and len(self.window) == 0:
-                # 所有数据已确认，发送FIN
+                print(f"[Sender] All data sent and acknowledged, sending FIN...")
                 self.state = STATE_FIN_SENT
                 fin_seq = self.next_seq
-                self.send_segment(fin_seq, SEGMENT_FIN)
+                self.SendSegment(fin_seq, 3)
                 self.window[fin_seq] = (
-                    segment.create_segment(fin_seq, SEGMENT_FIN),
+                    CreateSegment(fin_seq, 3),
                     0, time.time()
                 )
                 self.next_seq += 1
-                self.start_timer(fin_seq)
+                self.StartTimer(fin_seq)
                 break
             
-            # 检查窗口空间
             available_win = self.max_win - self.unacked_bytes
             
             if available_win > 0 and self.file_pos < self.file_size:
-                # 可以发送数据
-                payload_size = min(segment.MSS, available_win, self.file_size - self.file_pos)
+                payload_size = min(1000, available_win, self.file_size - self.file_pos)
                 
                 if payload_size > 0:
-                    # 读取数据
                     self.file.seek(self.file_pos)
                     payload = self.file.read(payload_size)
                     
                     if len(payload) > 0:
-                        # 发送DATA段
                         seq_num = self.next_seq
-                        seg = segment.create_segment(seq_num, SEGMENT_DATA, payload)
+                        seg = CreateSegment(seq_num, 0, payload)
                         
-                        # 保存到窗口
                         self.window[seq_num] = (seg, len(payload), time.time())
                         self.unacked_bytes += len(payload)
                         
-                        # 发送
-                        self.send_segment(seq_num, SEGMENT_DATA, payload)
+                        self.SendSegment(seq_num, 0, payload)
+                        print(f"[Sender] Sent DATA segment: seq={seq_num}, len={len(payload)}, file_pos={self.file_pos}/{self.file_size}")
                         
-                        # 更新序列号和文件位置
                         self.next_seq += len(payload)
                         self.file_pos += len(payload)
                         
-                        # 启动计时器（如果还没有）
                         if not self.timer_running:
-                            self.start_timer(seq_num)
+                            self.StartTimer(seq_num)
                         elif self.oldest_unacked_seq is None or seq_num < self.oldest_unacked_seq:
                             self.oldest_unacked_seq = seq_num
                     else:
-                        # 文件读取结束
                         break
                 else:
-                    # 窗口满，等待ACK
                     time.sleep(0.01)
             else:
-                # 窗口满或文件已读完，等待ACK
                 time.sleep(0.01)
     
-    def run(self):
-        """运行发送方"""
-        # 打开文件
+    def Run(self):
+        
         try:
             self.file = open(self.filename, 'rb')
-            self.file.seek(0, 2)  # 移动到文件末尾
+            self.file.seek(0, 2)
             self.file_size = self.file.tell()
-            self.file.seek(0)  # 回到开头
+            self.file.seek(0)
         except Exception as e:
-            print(f"Error opening file: {e}")
             return
         
-        # 启动接收线程
-        recv_thread = threading.Thread(target=self.receive_loop, daemon=True)
+        recv_thread = threading.Thread(target=self.ReceiveLoop, daemon=True)
         recv_thread.start()
         
-        # 连接建立
-        self.state = STATE_SYN_SENT
-        self.isn = 1000  # 简单的ISN选择
+        self.state = 1
+        self.isn = random.randint(0, 65535)
         self.base = self.isn
         self.next_seq = self.isn
         
         self.start_time = time.time()
         
-        # 发送SYN
-        self.send_segment(self.isn, SEGMENT_SYN)
+        print(f"[Sender] Starting connection, ISN={self.isn}")
+        self.SendSegment(self.isn, SEGMENT_SYN)
         self.window[self.isn] = (
-            segment.create_segment(self.isn, SEGMENT_SYN),
+            CreateSegment(self.isn, SEGMENT_SYN),
             0, time.time()
         )
         self.next_seq = self.isn + 1
-        self.start_timer(self.isn)
+        self.StartTimer(self.isn)
+        print(f"[Sender] SYN sent, waiting for ACK...")
         
-        # 等待连接建立
+        max_wait_time = 30
+        wait_start = time.time()
         while self.state == STATE_SYN_SENT:
+            if time.time() - wait_start > max_wait_time:
+                print(f"[Sender] Connection establishment timeout!")
+                return
             time.sleep(0.01)
         
         if self.state != STATE_ESTABLISHED:
-            print("Connection establishment failed")
+            print(f"[Sender] Connection not established, state={self.state}")
             return
         
-        # 发送数据
-        self.send_data()
+        print(f"[Sender] Connection established! Starting data transmission...")
+        self.SendData()
         
-        # 等待连接终止
+        print(f"[Sender] Waiting for FIN ACK...")
+        max_wait_time = 30
+        wait_start = time.time()
         while self.state == STATE_FIN_SENT:
+            if time.time() - wait_start > max_wait_time:
+                print(f"[Sender] FIN ACK timeout!")
+                return
             time.sleep(0.01)
         
-        # 关闭文件
+        print(f"[Sender] Connection closed successfully!")
+        
         if self.file:
             self.file.close()
         
-        # 关闭socket
         self.sock.close()
         
-        # 写入日志
-        self.write_log()
+        self.WriteLog()
     
-    def write_log(self):
-        """写入日志文件"""
+    def WriteLog(self):
+        
         with open('sender_log.txt', 'w') as f:
             for entry in self.log_entries:
                 f.write(entry)
             
-            # 写入统计信息
             f.write(f"Original data sent:            {self.stats['original_data_sent']:5d}\n")
             f.write(f"Total data sent:               {self.stats['total_data_sent']:5d}\n")
             f.write(f"Original segments sent:        {self.stats['original_segments_sent']:5d}\n")
@@ -449,7 +522,7 @@ class URPSender:
             f.write(f"PLC reverse segments corrupted: {self.stats['plc_reverse_segments_corrupted']:5d}\n")
 
 
-def main():
+def Main():
     if len(sys.argv) != 10:
         print("Usage: python3 sender.py sender_port receiver_port filename max_win rto flp rlp fcp rcp")
         sys.exit(1)
@@ -464,11 +537,11 @@ def main():
     fcp = float(sys.argv[8])
     rcp = float(sys.argv[9])
     
-    sender = URPSender(sender_port, receiver_port, filename, max_win, rto,
+    sender = UrpSender(sender_port, receiver_port, filename, max_win, rto,
                        flp, rlp, fcp, rcp)
-    sender.run()
+    sender.Run()
 
 
 if __name__ == '__main__':
-    main()
+    Main()
 

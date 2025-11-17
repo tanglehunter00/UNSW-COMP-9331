@@ -74,9 +74,9 @@ def create_segment(seq_num, segment_type, payload=b''):
     checksum_bytes = struct.pack('>H', checksum)
     
     # 完整段
-    segment = seq_bytes + flags_bytes + checksum_bytes + payload
+    segment_data = seq_bytes + flags_bytes + checksum_bytes + payload
     
-    return segment
+    return segment_data
 
 
 def parse_segment(segment_data):
